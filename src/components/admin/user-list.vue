@@ -21,17 +21,14 @@
       </v-col>
       <v-col >
         <div>
-            <span>关注:{{userInfo.follwedCount}}</span>
+            <span>关注:{{userInfo.followCount}}</span>
             <el-divider direction="vertical"></el-divider>
             <span>粉丝数:{{userInfo.fansCount}}</span>
             
           </div>
           <div>{{userInfo.introduction}}</div>
       </v-col>
-    <v-col>
-        <el-button type="primary" size="small" round="true" style="background-color:  red;">已关注</el-button>
 
-    </v-col>
       
      
     </v-row>

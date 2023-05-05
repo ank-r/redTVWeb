@@ -64,7 +64,8 @@
       v-on="on"
       @click="goToAdmin"
     >
-      <v-icon>mdi-video-plus</v-icon>
+    
+      <v-icon>fas fa-tachometer-alt</v-icon>
     </v-btn>
   </template>
   <span>管理中心</span>
@@ -189,6 +190,7 @@ export default{
       //回车搜索
       console.log("do search "+this.searchWorld)
       this.$router.push('/search/'+this.searchWorld)
+      this.searchWorld=""
 
     },
     logout() {

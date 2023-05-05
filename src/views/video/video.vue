@@ -69,7 +69,7 @@
       </v-col>
       <v-col cols="1" />
       <v-col cols="3">
-        <v-rating v-model="score" color="orange" background-color="orange lighten-3" />
+        <!-- <v-rating v-model="score" color="orange" background-color="orange lighten-3" /> -->
         <v-tooltip bottom>
           <template v-slot:activator="{ on, attrs }">
             <v-btn
@@ -96,9 +96,9 @@
         评论
         <Comment :videoInfo="videoData"  />
       </v-col>
-      <v-col>
+      <!-- <v-col>
         相关视频：
-      </v-col>
+      </v-col> -->
     </v-row>
   </v-container>
 

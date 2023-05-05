@@ -28,7 +28,7 @@
               
                 <el-button @click="doFollow" type="info"  v-show="showFollow" plain>{{followMeaasge}}</el-button>
                 <el-divider direction="vertical"></el-divider>
-                <el-button v-if="canMessage" @click="gotoMessage(userInfo.id)" type="info" plain>私信</el-button>
+                <el-button v-if="canMessage" @click="gotoMessage(userInfo.id)" type="info" v-show="showFollow" plain>私信</el-button>
                
               </div>
             </v-row> 
@@ -36,7 +36,7 @@
            <v-row style="margin-top: 20px;margin-left: 100px;">  
             <div>
             
-              <button @click="showCard(1)">关注 {{userInfo.followCount}}</button>
+              <button @click="showCard(1)">关注数 {{userInfo.followCount}}</button>
               <el-divider direction="vertical"></el-divider>
               <button  @click="showCard(2)">粉丝数 {{userInfo.fansCount}}</button>
             
@@ -49,13 +49,13 @@
           width="50%"
           >
           <v-row style="margin-bottom: 30px;">
-            <button @click="changeCard(1)"  style="margin-left: 20px;font-size: 20px;">关注(12)</button>
-            <button @click="changeCard(2)" style="margin-left: 25px;font-size: 20px;">粉丝(221)</button>
+            <button @click="changeCard(1)"  style="margin-left: 20px;font-size: 20px;">关注({{userInfo.followCount}})</button>
+            <button @click="changeCard(2)" style="margin-left: 25px;font-size: 20px;">粉丝({{userInfo.fansCount}})</button>
           </v-row>
 
           <v-row v-if="followORFans == 1" >
             <v-col
-              v-for="item in userList"
+              v-for="item in userFollowList"
               :key="item.id"
               cols="12"
             >
@@ -66,7 +66,7 @@
           </v-row>
           <v-row v-if="followORFans == 2" >
             <v-col
-            v-for="item in userList"
+            v-for="item in userFansList"
             :key="item.id"
             cols="12"
           >
@@ -86,7 +86,7 @@
         <v-tabs>
           <v-tab @click="setType(0)">发布视频列表</v-tab>
           <v-tab @click="setType(1)">点赞视频列表</v-tab>
-          <v-tab @click="setType(2)">消息列表<v-badge  content="12" color = "#D50000"></v-badge>  </v-tab>
+          <!-- <v-tab @click="setType(2)">消息列表<v-badge  content="12" color = "#D50000"></v-badge>  </v-tab> -->
         </v-tabs>
       </v-container>
       <v-divider />
@@ -94,7 +94,7 @@
         <div id="top" ></div>
         <v-row v-if="type == 0">
           <v-col
-            v-for="item in videoList"
+            v-for="item in publisVideoList"
             :key="item.id"
             cols="12"
           >
@@ -106,7 +106,7 @@
         </v-row>
         <v-row v-if="type == 1">
           <v-col
-            v-for="item in videoList"
+            v-for="item in likeVideoList"
             :key="item.id"
             cols="12"
           >
@@ -116,10 +116,7 @@
 
         </v-row>
 
-        <v-row v-if="type == 2">
-          消息列表
-
-        </v-row>
+        
         <v-snackbar
         v-model="showMessage"
         :top="true"
@@ -173,26 +170,11 @@
         followMeaasge:'已关注',
         isFollow : 1,
         videoList: [],
-        userList:[
-        {
-            id:12,
-            topImgUrl:"https://picsum.photos/id/11/500/300",
-            avatarUrl:"https://picsum.photos/id/11/500/300",
-            username:"王五",
-            fansCount:19,
-            follwedCount:90,
-            description:"用户的个人简介",
-            sex:1
-        },
-          { id:20,
-            topImgUrl:"https://picsum.photos/id/11/500/300",
-            avatarUrl:"https://picsum.photos/id/11/500/300",
-            username:"王五",
-            fansCount:19,
-            follwedCount:90,
-            description:"用户的个人简介"
-          }
-        ],
+        publisVideoList:[],
+        likeVideoList:[],
+        userFansList:[],
+        userFollowList:[],
+        userList:[],
         page: 1,
         size: 20,
         length: 1,
@@ -213,7 +195,7 @@
       this.getUserInfo()
       this.checkFollow()
       this.geUserList()
-      this.geVideoList()
+      this.getPublisVideoList()
 
       
       
@@ -332,6 +314,34 @@
           
         }
       },
+      getPublisVideoList() {
+        {
+          this.$axios({
+            url:"/video/getPublishList",
+            method:'get',
+            params:{
+              "userId":this.userInfo.id
+            }
+          }).then(re=>{
+            this.publisVideoList = re.data
+          })
+          
+        }
+      } ,
+      getLikeVideoList() {
+        {
+          this.$axios({
+            url:"/video/getLikeList",
+            method:'get',
+            params:{
+              "userId":this.userInfo.id
+            }
+          }).then(re=>{
+            this.likeVideoList = re.data
+          })
+          
+        }
+      },
       geUserList() {
         {
           this.$axios({
@@ -365,7 +375,13 @@
         if (type === 4) {
           return
         }
-        this.geVideoList()
+        if(type == 0){
+          this.getPublisVideoList()
+        }
+        if(type == 1){
+          this.getLikeVideoList()
+        }
+        
         this.$vuetify.goTo(0)
       },
       //第一次的卡片的展示的内容
@@ -375,9 +391,14 @@
         if(choose == 1){
           this.cardData = "关注列表"
           this.followORFans=1;
+          this.getUserFollowList();
+          console.log("关注列表")
+          
         }else{
           this.cardData = "粉丝列表"
           this.followORFans=2;
+          this.getUserFansList();
+          console.log("粉丝列表")
         }
 
       },
@@ -385,12 +406,38 @@
       changeCard(choose){
         if(choose == 1){
           this.cardData = "关注列表"
+          this.getUserFollowList();
           this.followORFans=1;
         }else{
           this.cardData = "粉丝列表"
           this.followORFans=2;
+          this.getUserFansList();
         }
 
+      },
+
+      getUserFansList(){
+        this.$axios({
+            url:"/user/getFans",
+            method:'get',
+            params:{
+              "userId":this.userInfo.id
+            }
+          }).then(re=>{
+            this.userFansList = re.data
+          })
+        
+      },
+      getUserFollowList(){
+        this.$axios({
+            url:"/user/getFollows",
+            method:'get',
+            params:{
+              "userId":this.userInfo.id
+            }
+          }).then(re=>{
+            this.userFollowList = re.data
+          })
       },
       // 去消息页面
       gotoMessage(userId){

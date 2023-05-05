@@ -364,7 +364,7 @@ display: -webkit-box;
         "status": 4
         },
         
-        messageType:5,
+        messageType:1,
         notificationList:[],
         likeMessageList:[],
         followMessageList:[],

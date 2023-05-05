@@ -24,7 +24,7 @@
                     {{ getType(item.type) }}
                   </template>
                   <template v-slot:item.userId="{ item }">
-                    <a :href="`/user/${item.userId}`" target="_blank"> {{ item.userId }} </a>
+                    <a :href="`/user/${item.userId}`" target="_blank"> {{ item.userInfo.username }} </a>
                   </template>
                   <template v-slot:item.imgUrl="{ item }">
                     <v-img :src="item.imgUrl" max-height="200px" aspect-ratio="1.77" />
@@ -90,15 +90,6 @@
               </v-row>
               <v-row v-if="showError">
                 <v-col>
-                  <v-select
-                    :items="examineItem"
-                    label="不通过原因"
-                    @change="getErrorString"
-                  />
-                </v-col>
-              </v-row>
-              <v-row v-if="showError">
-                <v-col>
                   <v-text-field
                     v-model="examineMessage"
                     label="处理意见"
@@ -147,7 +138,6 @@
         examineMessage: '',
         examineStatus: ['通过', '不通过'],
         showError: false,
-        examineItem: [],
         dialog: false,
         nowExamineItem: {},
         TimeUtil,
@@ -159,7 +149,7 @@
             value: 'id'
           },
           { text: '创建时间', sortable: false, value: 'createTime' },
-          { text: '用户ID', sortable: false, value: 'userId' },
+          { text: '作者', sortable: false, value: 'userId' },
           { text: '标题', sortable: false, value: 'title' },
           { text: '封面', sortable: false, value: 'imgUrl' },
           { text: '操作', value: 'actions', sortable: false }
@@ -171,7 +161,7 @@
     },
     created() {
       this.init()
-      this.setExamineItem()
+
     },
     methods: {
       save() {
@@ -186,20 +176,14 @@
         const data = {
           videoId: this.nowExamineItem.id,
           result,
-          type: this.errorType,
           message: this.examineMessage
         }
-  
-        fetch(`/api/admin/examine`, {
-          headers: {
-            'Content-Type': 'application/json; charset=UTF-8',
-            'X-XSRF-TOKEN': this.$cookies.get('XSRF-TOKEN')
-          },
-          method: 'POST',
-          credentials: 'include',
-          body: JSON.stringify(data)
-        }).then(response => response.json())
-          .then(json => {
+
+          this.$axios({
+            url:"/video/examine",
+            method:'post',
+            data:data
+          }).then(json => {
             if (json.status === 200) {
               //
               this.message = '审核结束'
@@ -226,6 +210,7 @@
         if (value === '不通过') {
           this.showError = true
         } else {
+          // 通过
           this.showError = false
         }
         console.log(value)
@@ -242,22 +227,6 @@
           }).then(re=>{
             this.videoList = re.data
           }).catch(e=>{
-            return null
-          })
-      },
-      setExamineItem() {
-        fetch(`/api/examine/item`, {
-          headers: {
-            'Content-Type': 'application/json; charset=UTF-8',
-            'X-XSRF-TOKEN': this.$cookies.get('XSRF-TOKEN')
-          },
-          method: 'GET',
-          credentials: 'include'
-        }).then(response => response.json())
-          .then(json => {
-            this.examineItem = json.data
-          })
-          .catch(e => {
             return null
           })
       },

@@ -78,10 +78,11 @@
                 }).then(re=>{
                   if(re.status != 200){
                     alert(re.message)
+                    
                     return
                   }
                 })
-                
+                this.getCommentList()
                     // 添加完内容，清空
                     this.messageContent = '',
                     this.$refs.talkInput.clearMessage();

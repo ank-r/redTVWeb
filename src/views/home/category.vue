@@ -6,7 +6,17 @@
             <h1>搜索中</h1>
         </div>
         <div v-if="videoList.length == 0"> 
-            <h1>没有对应的数据</h1>
+            
+            <div style="height: 250px;width: 250px;margin-left: 300px;">
+              <v-img
+              lazy-src="https://picsum.photos/id/11/10/6"
+              max-height="150"
+              max-width="250"
+              src="/api/get/file/2023-05-05/182398d70d0a4c8fb7e5544951c09a18.PNG"
+            ></v-img>
+              <h5 style="margin-left: 50px;">没有对应数据</h5>
+            </div>
+
         </div>
       <!-- <v-btn text @click="getVideoList">获取视频数据</v-btn> -->
         <v-row no-gutters style="padding-top: 18px; padding-bottom: 12px; padding-left: 20px;">

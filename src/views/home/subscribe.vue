@@ -52,96 +52,22 @@
           { icon: 'mdi-history', text: '历史记录', link: '/history' }
     
         ],
-        videoList:[
-        {
-          id:12,
-          imgUrl:"https://picsum.photos/id/11/500/300",
-          duration:"aas",
-          userId:12,
-          avatarUrl:"https://picsum.photos/id/11/500/300",
-          title:"美国队长",
-          username:"王伟",
-          createTime:"2000-11-26",
-          viewCount:22,
-          danmakuCount:33
-        },
-        {
-          id:12,
-          imgUrl:"https://picsum.photos/id/11/500/300",
-          duration:"aas",
-          userId:12,
-          avatarUrl:"https://picsum.photos/id/11/500/300",
-          title:"美国队长",
-          username:"王伟",
-          createTime:"2000-11-26",
-          viewCount:22,
-          danmakuCount:33
-        },
-        {
-          id:12,
-          imgUrl:"https://picsum.photos/id/11/500/300",
-          duration:"aas",
-          userId:12,
-          avatarUrl:"https://picsum.photos/id/11/500/300",
-          title:"美国队长",
-          username:"王伟",
-          createTime:"2000-11-26",
-          viewCount:22,
-          danmakuCount:33
-        },
-        {
-          id:12,
-          imgUrl:"https://picsum.photos/id/11/500/300",
-          duration:"aas",
-          userId:12,
-          avatarUrl:"https://picsum.photos/id/11/500/300",
-          title:"美国队长",
-          username:"王伟",
-          createTime:"2000-11-26",
-          viewCount:22,
-          danmakuCount:33
-        },
-        {
-          id:12,
-          imgUrl:"https://picsum.photos/id/11/500/300",
-          duration:"aas",
-          userId:12,
-          avatarUrl:"https://picsum.photos/id/11/500/300",
-          title:"美国队长",
-          username:"王伟",
-          createTime:"2000-11-26",
-          viewCount:22,
-          danmakuCount:33
-        },
-        {
-          id:12,
-          imgUrl:"https://picsum.photos/id/11/500/300",
-          duration:"aas",
-          userId:12,
-          avatarUrl:"https://picsum.photos/id/11/500/300",
-          title:"美国队长",
-          username:"王伟",
-          createTime:"2000-11-26",
-          viewCount:22,
-          danmakuCount:33
-        },
-        {
-          id:12,
-          imgUrl:"https://picsum.photos/id/11/500/300",
-          duration:"aas",
-          userId:12,
-          avatarUrl:"https://picsum.photos/id/11/500/300",
-          title:"美国队长",
-          username:"王伟",
-          createTime:"2000-11-26",
-          viewCount:22,
-          danmakuCount:33
-        }
-        ]
-    
+        videoList:[]
       
     
       }),
+      created() {
+    // console.log(this.$route.query.page)
+    // //分页标签的初始化页
+    // if (this.$route.query.page === undefined) {
+    //   this.page = 1
+    // } else {
+    //   this.page = this.$route.query.page
+    // }
+   
+    this.getVideoList()
+    // this.testLogin()
+  },
       methods: {
         headClick(value) {
           if (value === 0) {
@@ -151,6 +77,16 @@
           } else {
             this.logout()
           }
+        },
+                //获取首页的推荐视频列表
+                getVideoList(){
+          this.$axios({
+            url:"/video/getFollowVideoList",
+            method:'get'
+          }).then(re=>{
+            this.videoList = re.data
+          })
+          
         },
         logout() {
           fetch(`/api/logout`, {

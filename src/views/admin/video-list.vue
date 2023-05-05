@@ -24,20 +24,14 @@
                   {{ getType(item.type) }}
                 </template>
                 <template v-slot:item.userId="{ item }">
-                  <a :href="`/user/${item.userId}`" target="_blank"> {{ item.userId }} </a>
+                  <a :href="`/user/${item.userId}`" target="_blank"> {{ item.userInfo.username }} </a>
                 </template>
                 <template v-slot:item.imgUrl="{ item }">
                   <v-img :src="item.imgUrl" max-height="200px" aspect-ratio="1.77" />
                 </template>
        
                 <template v-slot:item.actions="{ item }">
-                  <a :href="`/video/${item.id}`" target="_blank">
-                    <v-icon
-                      class="mr-2"
-                    >
-                      mdi-video
-                    </v-icon>
-                  </a>
+            
                   <v-tooltip left>
                     <template v-slot:activator="{ on, attrs }">
                       <v-btn
@@ -45,13 +39,28 @@
                         class="mr-2"
                         v-bind="attrs"
                         v-on="on"
-                        @click="examine(item)"
+                        
+                        @click="videoDetail(item)"
                       >
-                        <v-icon>mdi-pencil</v-icon>
+                      <i class="el-icon-more"></i>
+                      </v-btn>
+                    </template>
+                    <span>视频详细信息</span>
+                  </v-tooltip>
+                  <v-tooltip left>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-btn
+                        icon
+                        class="mr-2"
+                        v-bind="attrs"
+                        v-on="on"
+                        @click="removeVideo(item)"
+                      >
+                      <i class="el-icon-delete"></i>
                       </v-btn>
 
                     </template>
-                    <span>审核意见</span>
+                    <span>下架视频</span>
                   </v-tooltip>
                 </template>
 
@@ -60,6 +69,59 @@
                 </template>
               </v-data-table>
             </v-col>
+
+            <el-dialog
+  :title="videoInfo.title"
+  :visible.sync="centerDialogVisible"
+  width="500px"
+  center>
+  
+  <div style="width: 500px">
+  <v-row style="width: 100%;">
+    <v-col cols="5">
+      <router-link :to="`/video/${videoInfo.id}`">
+        <v-img
+          :src="videoInfo.imgUrl"
+          outlined
+          aspect-ratio="1.77"
+          class="white--text align-end"
+          style="width: 100%;"
+        >
+        </v-img>
+      </router-link>
+    </v-col>
+    <v-col cols="5" >
+      {{videoInfo.describes}}
+    </v-col>
+
+  </v-row>
+  
+    <v-row style="padding-top: 12px; padding-bottom: 12px">
+      <v-col cols="2">
+      </v-col>
+      <v-col cols="10">
+        <p style="font-size: 20px; margin-bottom: 0px;color: black;">
+          <router-link :to="`/video/${videoInfo.id}`" style="color: black;">
+            {{ videoInfo.title }}
+          </router-link>
+        </p>
+        <p style="font-size: 18px; color: #606060;">
+          {{ videoInfo.viewCount }} 观看 <span v-html="`&nbsp;&nbsp;`" />
+          {{ videoInfo.danmakuCount }} 条弹幕 <span v-html="`&nbsp;&nbsp;`" />
+          {{ videoInfo.commentCount }} 条评论 <span v-html="`&nbsp;&nbsp;`" />
+          <br>
+          <span v-text="TimeUtil.timeToNowStrning(videoInfo.createTime)" />
+        </p>
+      </v-col>
+    </v-row>
+  
+  </div>
+  <span slot="footer" class="dialog-footer">
+    
+    <el-button type="primary" @click="centerDialogVisible = false">关闭</el-button>
+  </span>
+            </el-dialog>
+
           </v-row>
 
           <v-row justify="center" style="padding-top: 12px; padding-bottom: 24px">
@@ -72,48 +134,7 @@
         </v-card>
       </v-col>
     </v-row>
-    <v-dialog v-model="dialog" persistent max-width="600px">
-      <v-card>
-        <v-card-title>
-          <span class="headline">审核 - {{ nowExamineItem.title }}</span>
-        </v-card-title>
-        <v-card-text>
-          <v-container>
-            <v-row>
-              <v-col>
-                <v-select
-                  :items="examineStatus"
-                  label="审核结果"
-                  @change="getexamineStatus"
-                />
-              </v-col>
-            </v-row>
-            <v-row v-if="showError">
-              <v-col>
-                <v-select
-                  :items="examineItem"
-                  label="不通过原因"
-                  @change="getErrorString"
-                />
-              </v-col>
-            </v-row>
-            <v-row v-if="showError">
-              <v-col>
-                <v-text-field
-                  v-model="examineMessage"
-                  label="处理意见"
-                />
-              </v-col>
-            </v-row>
-          </v-container>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn color="blue darken-1" text @click="dialog = false">取消</v-btn>
-          <v-btn color="blue darken-1" text @click="save">确认</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+   
     <v-snackbar
       v-model="showMessage"
       :top="true"
@@ -142,12 +163,14 @@ export default {
   data() {
     return {
       showMessage: false,
+      centerDialogVisible: false,
       message: '',
       errorType: '',
       examineMessage: '',
       examineStatus: ['通过', '不通过'],
       showError: false,
       examineItem: [],
+      videoInfo:{},
       dialog: false,
       nowExamineItem: {},
       TimeUtil,
@@ -159,7 +182,7 @@ export default {
           value: 'id'
         },
         { text: '创建时间', sortable: false, value: 'createTime' },
-        { text: '用户ID', sortable: false, value: 'userId' },
+        { text: '作者', sortable: false, value: 'userId' },
         { text: '标题', sortable: false, value: 'title' },
         { text: '封面', sortable: false, value: 'imgUrl' },
         { text: '操作', value: 'actions', sortable: false }
@@ -234,10 +257,59 @@ export default {
       this.dialog = true
       this.nowExamineItem = value
     },
+    removeVideo(value){
+      // console.log(value);
+      let videoId = value.id
+      console.log(videoId)
+
+        let info = "你确定要删除该视频吗"
+          this.$confirm(info, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.$axios({
+          url:"/video/delete/"+value.id,
+          method:'post'
+        }).then(re=>{
+          
+          if(re.status == 200){
+            this.$message({
+            type: 'success',
+            message: '删除成功!'
+          });
+          }
+
+        }).catch(e=>{
+          this.$message({
+            type: 'info',
+            message: '删除失败'
+          });          
+
+          return null
+        })
+        }).catch((re) => {
+          
+          console.log("出现错误")
+          console.log(re)
+          this.$message({
+            type: 'info',
+            message: '已取消删除'
+          });          
+        });
+
+    },
+    videoDetail(value){
+      console.log(value);
+      let videoId = value.id
+      console.log(videoId)
+      this.centerDialogVisible = true
+      this.videoInfo = value
+    },
     init() {
 
         this.$axios({
-          url:"/video/getExamineList",
+          url:"/video/getVideoList",
           method:'get'
         }).then(re=>{
           this.videoList = re.data

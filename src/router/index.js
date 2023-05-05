@@ -156,6 +156,14 @@ const routes = [
     ]
   },
   {
+    path: '/adminlogin',
+    name: 'AdminLogin',
+    component: () => import('@/views/login/adminlogin.vue'),
+    meta: {
+      title: '管理员登录'
+    }
+  },
+  {
     path: '/login',
     name: 'Login',
     component: () => import('@/views/login/login.vue'),
@@ -195,39 +203,11 @@ router.beforeEach((to, from, next) => {
 
 
 
-  //用户是否登录
-  // const date = new Date().getTime()
-  // if (router.app.$options.store.state.userInfo != null) {
-  //   // console.log(router.app.$options.store.state.userInfo.expireTime > date, router.app.$options.store.state.userInfo.expireTime, date)
-    
-    
-  //   if (router.app.$options.store.state.userInfo.expireTime > date) {
-  //     if (to.path === '/login') {
-  //       return next({ path: '/' })
-  //     }
-  //     return next()
-  //   } else {
-  //     router.app.$options.store.commit('setUserInfo', null)
-  //     return next({
-  //       path: '/login',
-  //       query: { redirect: to.fullPath }
-  //     })
-  //   }
-  // } else {
-  //   if (to.meta.requireAuth) {
-  //     return next({
-  //       path: '/login',
-  //       query: { redirect: to.fullPath }
-  //     })
-  //   } else {
-  //     return next()
-  //   }
-  // }
   
   if(router.app.$options.store.state.userInfo != null){
     return next()
   }else{
-    if(to.path ==='/login'){
+    if( to.path == '/login' || to.path === '/adminlogin'){
       return next()
     }
 
@@ -235,34 +215,16 @@ router.beforeEach((to, from, next) => {
         return next()
     }
 
+    if(to.path === '/studio' ||to.path === '/studio/upload'
+    ||to.path === '/studio/invitation' ||to.path === '/studio/examine'
+    ||to.path === '/studio/video-list' ||to.path === '/studio/user-list' 
+    ||to.path === '/studio/user-data'||to.path === '/studio/category' ){
+      return next({path:'/adminlogin'})
+    }
+
     return next({path:'/login'})
 
   }
-
-
-
-    // // 取出token(vuex)
-    // const token = store.state.user.token
-    // if (token) {
-    //   // 去登录页
-    //   if (to.path === '/login') {
-    //     console.log('你已经登录了，就不能去login，转到主页')
-    //     next('/')
-    //   } else {
-    //     next()
-    //   }
-    // } else {
-    //   // 没有登录，只能去白名单(那些不需要token就可以访问的页面)
-    //   if (to.path === whiteList) {
-    //     next()
-    //   } else {
-    //     console.log('你没有登录，转到登录页')
-    //     next('/login')
-    //   }
-    //   // next() // 重点强调next一定要调用
-  
-    // }
-
 
   
 })
